@@ -1,0 +1,373 @@
+---
+import Base from '../layouts/Base.astro';
+import {
+  groom,
+  bride,
+  monogram,
+  verse,
+  events,
+  photos,
+  weddingDateISO,
+  weddingDateLabel,
+} from '../data/wedding';
+
+// Các "cảnh" full-bleed
+const scenes = [
+  { img: photos.editorialWide[0], kicker: 'Cảnh 01', title: 'Giữa lòng thành phố', sub: 'Nơi hai đứa bắt đầu' },
+  { img: photos.classic[6], kicker: 'Cảnh 02', title: 'Dưới ánh đèn cổ điển', sub: 'Lời hẹn ước trăm năm' },
+  { img: photos.editorialWide[1], kicker: 'Cảnh 03', title: 'Qua từng nhịp cầu', sub: 'Về chung một lối' },
+];
+// Ảnh nền tối, full-bleed cho mục "Hai gia đình" (giữ chất cinematic)
+const famsPhoto = photos.classic[0]; // concept-2: đôi trên cầu thang cổ điển
+
+// Dải ảnh "Khoảnh khắc" cuộn ngang (như bản cũ, phong phú hơn)
+const strip = [
+  photos.classic[1],
+  photos.editorial[0],
+  photos.classicWide[0],
+  photos.classic[5],
+  photos.editorial[3],
+  photos.classic[2],
+  photos.editorialWide[0],
+  photos.mono[0],
+  photos.editorial[1],
+  photos.classic[4],
+  photos.monoWide[0],
+];
+---
+
+<Base title="Cinematic Scroll — Minh Luân & Thu Trang" bodyClass="cb">
+  <div class="progress" id="prog" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <!-- HERO -->
+  <section class="c-hero">
+    <div class="c-hero-bg" style={`background-image:url(${photos.classicWide[0]})`}></div>
+    <div class="c-hero-inner">
+      <p class="c-eyebrow">Micae &amp; Maria · Sài Gòn 2026</p>
+      <h1>
+        <span>Minh&nbsp;Luân</span>
+        <em>♡</em>
+        <span>Thu&nbsp;Trang</span>
+      </h1>
+      <p class="c-date">{weddingDateLabel}</p>
+      <div class="c-cue"><span></span>cuộn để mở ra câu chuyện</div>
+    </div>
+  </section>
+
+  <!-- VERSE -->
+  <section class="c-verse reveal">
+    <p class="c-quote">“{verse.text}”</p>
+    <p class="c-ref">{verse.ref}</p>
+  </section>
+
+  <!-- HAI GIA ĐÌNH (full-bleed, chữ overlay trên ảnh tối) -->
+  <section class="c-fams">
+    <div class="c-fams-bg" style={`background-image:url(${famsPhoto})`} data-parallax></div>
+    <div class="c-fams-inner reveal">
+      <p class="c-fams-kicker">Trân trọng báo tin lễ thành hôn</p>
+      <h2 class="c-fams-title">Hai gia đình</h2>
+      <div class="c-fams-grid">
+        <div class="c-fam">
+          <span class="c-fam-tag">Nhà Trai</span>
+          <p class="c-fam-parent">{groom.father}</p>
+          <p class="c-fam-parent">{groom.mother}</p>
+          <p class="c-fam-town">{groom.hometown}</p>
+          <div class="c-fam-line"></div>
+          <p class="c-fam-role">{groom.role}</p>
+          <p class="c-fam-name">{groom.saintName}<br />{groom.fullName}</p>
+        </div>
+        <div class="c-fam-mid" aria-hidden="true"><span class="c-amp">&amp;</span></div>
+        <div class="c-fam">
+          <span class="c-fam-tag">Nhà Gái</span>
+          <p class="c-fam-parent">{bride.father}</p>
+          <p class="c-fam-parent">{bride.mother}</p>
+          <p class="c-fam-town">{bride.hometown}</p>
+          <div class="c-fam-line"></div>
+          <p class="c-fam-role">{bride.role}</p>
+          <p class="c-fam-name">{bride.saintName}<br />{bride.fullName}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CÁC CẢNH PARALLAX -->
+  {scenes.map((s) => (
+    <section class="c-scene">
+      <div class="c-scene-bg" style={`background-image:url(${s.img})`} data-parallax></div>
+      <div class="c-scene-cap reveal">
+        <span class="c-kicker">{s.kicker}</span>
+        <h2>{s.title}</h2>
+        <p>{s.sub}</p>
+      </div>
+    </section>
+  ))}
+
+  <!-- ĐẾM NGƯỢC -->
+  <section class="c-count reveal">
+    <p class="c-count-lead">Chỉ còn</p>
+    <div class="c-count-grid" id="cd-b">
+      <div><b data-d>00</b><span>ngày</span></div>
+      <div class="sep">:</div>
+      <div><b data-h>00</b><span>giờ</span></div>
+      <div class="sep">:</div>
+      <div><b data-m>00</b><span>phút</span></div>
+      <div class="sep">:</div>
+      <div><b data-s>00</b><span>giây</span></div>
+    </div>
+    <p class="c-count-foot">đến khoảnh khắc chúng mình nói “Con đồng ý”.</p>
+  </section>
+
+  <!-- TIMELINE SỰ KIỆN -->
+  <section class="c-time reveal">
+    <h2 class="c-time-title">Lịch trình hôn lễ</h2>
+    <div class="c-timeline">
+      {events.map((e) => (
+        <article class="c-node reveal">
+          <div class="c-node-time">{e.time ?? '—'}</div>
+          <div class="c-node-body">
+            <span class="c-node-side">{e.side}</span>
+            <h3>{e.title}</h3>
+            <p class="c-node-date">{e.weekday ? `${e.weekday}, ` : ''}{e.date}{e.reception ? ` · ${e.reception}` : ''}</p>
+            <p class="c-node-venue">{e.venue}</p>
+            <p class="c-node-addr">{e.address}</p>
+            <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.mapQuery)}`} target="_blank" rel="noopener">Chỉ đường ↗</a>
+          </div>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <!-- KHOẢNH KHẮC (dải ảnh cuộn ngang, cinematic) -->
+  <section class="c-strip reveal">
+    <p class="c-strip-label">— Khoảnh khắc —</p>
+    <div class="c-strip-track">
+      {strip.map((src, i) => (
+        <figure><img src={src} alt={`Ảnh ${i + 1}`} loading="lazy" /></figure>
+      ))}
+    </div>
+  </section>
+
+  <!-- CHUNG VUI / RSVP (full-bleed ảnh tối) -->
+  <section class="c-rsvp">
+    <div class="c-rsvp-bg" style={`background-image:url(${photos.monoWide[0]})`}></div>
+    <div class="c-rsvp-inner reveal">
+      <p class="c-rsvp-kicker">Sự hiện diện của bạn</p>
+      <h2>Chung vui cùng chúng mình</h2>
+      <p>
+        Đám cưới sẽ trọn vẹn hơn khi có bạn. Hãy xác nhận tham dự để gia đình
+        chúng mình chuẩn bị đón tiếp thật chu đáo, và gửi đôi lời chúc phúc nhé.
+      </p>
+      <div class="c-rsvp-actions">
+        <a class="c-btn" href="#">Xác nhận tham dự</a>
+        <a class="c-btn ghost" href="#">Gửi lời chúc</a>
+      </div>
+      <p class="c-rsvp-note">Micae Minh Luân &amp; Maria Thu Trang — chờ đón bạn ngày 08.08.2026</p>
+    </div>
+  </section>
+
+  <!-- FINALE -->
+  <section class="c-finale">
+    <div class="c-finale-bg" style={`background-image:url(${photos.mono[1]})`}></div>
+    <div class="c-finale-inner reveal">
+      <div class="c-mono">{monogram}</div>
+      <p class="c-thanks">Hẹn gặp Quý khách trong ngày trọng đại của chúng tôi</p>
+      <h2>Minh Luân &amp; Thu Trang</h2>
+      <p class="c-finale-date">{weddingDateLabel} · Thủ Đức, Sài Gòn</p>
+    </div>
+  </section>
+
+  <script is:inline define:vars={{ weddingDateISO }}>
+    // Reveal
+    const io = new IntersectionObserver((es) => {
+      es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: 0.2 });
+    document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+
+    // Progress bar + parallax
+    const prog = document.getElementById('prog');
+    const px = [...document.querySelectorAll('[data-parallax]')];
+    function onScroll() {
+      const st = window.scrollY;
+      const h = document.documentElement.scrollHeight - window.innerHeight;
+      if (prog) prog.style.transform = `scaleX(${h > 0 ? st / h : 0})`;
+      px.forEach((el) => {
+        const r = el.parentElement.getBoundingClientRect();
+        const off = (r.top + r.height / 2 - window.innerHeight / 2) * -0.12;
+        el.style.transform = `translate3d(0, ${off}px, 0) scale(1.15)`;
+      });
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
+    // Countdown
+    const target = new Date(weddingDateISO).getTime();
+    const box = document.getElementById('cd-b');
+    const p = (n) => String(n).padStart(2, '0');
+    function tick() {
+      let diff = Math.max(0, target - Date.now());
+      const d = Math.floor(diff / 86400000); diff -= d * 86400000;
+      const h = Math.floor(diff / 3600000); diff -= h * 3600000;
+      const m = Math.floor(diff / 60000); diff -= m * 60000;
+      const s = Math.floor(diff / 1000);
+      if (!box) return;
+      box.querySelector('[data-d]').textContent = p(d);
+      box.querySelector('[data-h]').textContent = p(h);
+      box.querySelector('[data-m]').textContent = p(m);
+      box.querySelector('[data-s]').textContent = p(s);
+    }
+    tick(); setInterval(tick, 1000);
+  </script>
+
+  <style is:global>
+    .cb {
+      --gold: #cba24c;
+      --wine: #7b1e2b;
+      --bg: #0d0b0c;
+      --bg2: #14100f;
+      background: var(--bg);
+      color: #ece6dc;
+      font-family: var(--font-be);
+    }
+    .cb section { position: relative; }
+
+    .progress {
+      position: fixed; top: 0; left: 0; height: 2px; width: 100%; z-index: 60;
+      background: linear-gradient(90deg, var(--gold), var(--wine));
+      transform: scaleX(0); transform-origin: 0 50%;
+    }
+    .grain {
+      position: fixed; inset: 0; z-index: 55; pointer-events: none; opacity: .05;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    /* HERO */
+    .c-hero { height: 100svh; overflow: hidden; }
+    .c-hero-bg {
+      position: absolute; inset: -6% 0; background-size: cover; background-position: center 30%;
+      transform: scale(1.08); animation: kb 18s ease-in-out infinite alternate;
+      filter: brightness(.72) contrast(1.05) saturate(1.02);
+    }
+    @keyframes kb { to { transform: scale(1.16) translateY(-2%); } }
+    .c-hero::after {
+      content: ''; position: absolute; inset: 0;
+      background:
+        radial-gradient(78% 60% at 50% 46%, rgba(6,5,6,.62), rgba(6,5,6,.16) 56%, transparent 78%),
+        linear-gradient(180deg, rgba(6,5,6,.55), transparent 24%, transparent 60%, rgba(6,5,6,.92));
+    }
+    .c-hero-inner { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 8vw; }
+    .c-eyebrow { font-size: 12px; letter-spacing: .4em; text-transform: uppercase; color: #e6c98d; opacity: 0; animation: fadeUp 1.1s .2s forwards; text-shadow: 0 1px 16px rgba(0,0,0,.7); }
+    .c-hero h1 { margin: 20px 0; display: flex; flex-direction: column; gap: 4px; font-family: var(--font-cormorant); font-weight: 300; line-height: .9; text-shadow: 0 2px 8px rgba(0,0,0,.45), 0 0 80px rgba(0,0,0,.55); }
+    .c-hero h1 span { font-size: clamp(3.4rem, 11vw, 9rem); letter-spacing: .01em; opacity: 0; animation: fadeUp 1.2s forwards; }
+    .c-hero h1 span:first-of-type { animation-delay: .35s; }
+    .c-hero h1 span:last-of-type { animation-delay: .75s; }
+    .c-hero h1 em { font-size: clamp(1.4rem, 4vw, 2.6rem); color: var(--wine); font-style: normal; opacity: 0; animation: fadeUp 1s .6s forwards; }
+    .c-date { font-family: var(--font-cormorant); font-size: clamp(1.1rem, 2.4vw, 1.6rem); letter-spacing: .4em; color: #f4eee3; opacity: 0; animation: fadeUp 1.1s 1s forwards; text-shadow: 0 1px 16px rgba(0,0,0,.7); }
+    .c-cue { position: absolute; bottom: 34px; font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: #e2d5c3; display: flex; flex-direction: column; align-items: center; gap: 12px; opacity: 0; animation: fadeUp 1s 1.4s forwards; text-shadow: 0 1px 14px rgba(0,0,0,.7); }
+    .c-cue span { width: 1px; height: 46px; background: linear-gradient(var(--gold), transparent); animation: cueLine 2s ease-in-out infinite; transform-origin: top; }
+    @keyframes cueLine { 0%,100% { transform: scaleY(.4); opacity: .4; } 50% { transform: scaleY(1); opacity: 1; } }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+
+    /* VERSE */
+    .c-verse { padding: 22vh 8vw; text-align: center; background: var(--bg2); max-width: 1100px; margin: 0 auto; }
+    .c-quote { font-family: var(--font-cormorant); font-style: italic; font-weight: 300; font-size: clamp(1.7rem, 4.4vw, 3.4rem); line-height: 1.4; color: #f2ece1; margin: 0; }
+    .c-ref { margin-top: 28px; font-size: 12px; letter-spacing: .3em; text-transform: uppercase; color: var(--gold); }
+
+    /* SCENES */
+    .c-scene { height: 100svh; overflow: hidden; display: flex; align-items: flex-end; }
+    .c-scene-bg { position: absolute; inset: -12% 0; background-size: cover; background-position: center; will-change: transform; }
+    .c-scene::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(8,6,7,.92), transparent 55%); }
+    .c-scene-cap { position: relative; z-index: 2; padding: 0 8vw 12vh; }
+    .c-kicker { font-size: 11px; letter-spacing: .4em; text-transform: uppercase; color: var(--gold); }
+    .c-scene-cap h2 { font-family: var(--font-cormorant); font-weight: 300; font-size: clamp(2.4rem, 7vw, 5.4rem); margin: 10px 0 6px; line-height: 1; }
+    .c-scene-cap p { font-family: var(--font-cormorant); font-style: italic; font-size: clamp(1.1rem, 3vw, 1.7rem); color: #cbb9a3; margin: 0; }
+
+    /* COUNTDOWN */
+    .c-count { text-align: center; padding: 20vh 6vw; background: radial-gradient(120% 120% at 50% 0%, #1a1412, var(--bg)); }
+    .c-count-lead { font-family: var(--font-cormorant); font-style: italic; font-size: 1.6rem; color: var(--gold); margin: 0 0 30px; }
+    .c-count-grid { display: flex; align-items: center; justify-content: center; gap: clamp(8px, 3vw, 26px); }
+    .c-count-grid div:not(.sep) { display: flex; flex-direction: column; gap: 10px; min-width: clamp(64px, 15vw, 120px); }
+    .c-count-grid b { font-family: var(--font-cormorant); font-weight: 300; font-size: clamp(2.8rem, 10vw, 6rem); line-height: 1; font-variant-numeric: tabular-nums; color: #f4eee3; }
+    .c-count-grid span { font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: #9c8f7d; }
+    .c-count-grid .sep { font-family: var(--font-cormorant); font-size: clamp(2rem, 7vw, 4rem); color: var(--wine); align-self: flex-start; }
+    .c-count-foot { margin-top: 34px; font-family: var(--font-cormorant); font-style: italic; font-size: 1.3rem; color: #cbb9a3; }
+
+    /* TIMELINE */
+    .c-time { padding: 16vh 8vw; background: var(--bg2); }
+    .c-time-title { text-align: center; font-family: var(--font-cormorant); font-weight: 300; font-size: clamp(2rem, 5vw, 3.4rem); margin: 0 0 8vh; color: #f2ece1; }
+    .c-timeline { max-width: 760px; margin: 0 auto; border-left: 1px solid rgba(203,162,76,.35); }
+    .c-node { display: grid; grid-template-columns: 90px 1fr; gap: 26px; padding: 0 0 6vh 34px; position: relative; }
+    .c-node::before { content: ''; position: absolute; left: -6px; top: 6px; width: 11px; height: 11px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 4px rgba(203,162,76,.15); }
+    .c-node-time { font-family: var(--font-cormorant); font-size: 1.7rem; color: var(--gold); }
+    .c-node-side { font-size: 10px; letter-spacing: .3em; text-transform: uppercase; color: #9c8f7d; }
+    .c-node h3 { font-family: var(--font-cormorant); font-weight: 400; font-size: 1.9rem; margin: 6px 0 8px; color: #f2ece1; }
+    .c-node-date { font-size: 13px; color: #cbb9a3; margin: 0 0 10px; }
+    .c-node-venue { font-weight: 500; margin: 0 0 2px; font-size: 15px; }
+    .c-node-addr { font-size: 13px; color: #9c8f7d; margin: 0 0 12px; font-weight: 300; }
+    .c-node a { font-size: 12px; letter-spacing: .15em; text-transform: uppercase; color: var(--gold); text-decoration: none; border-bottom: 1px solid rgba(203,162,76,.4); padding-bottom: 3px; }
+
+    /* STRIP */
+    .c-strip { padding: 14vh 0; overflow: hidden; }
+    .c-strip-label { text-align: center; font-family: var(--font-cormorant); font-style: italic; font-size: 1.5rem; color: var(--gold); margin: 0 0 40px; }
+    .c-strip-track { display: flex; gap: 16px; padding: 0 5vw; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+    .c-strip-track::-webkit-scrollbar { display: none; }
+    .c-strip-track figure { margin: 0; flex: 0 0 auto; width: clamp(220px, 32vw, 360px); height: clamp(300px, 44vw, 480px); overflow: hidden; scroll-snap-align: center; }
+    .c-strip-track img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(.35) contrast(1.03); transition: filter .6s, transform 1.2s; }
+    .c-strip-track figure:hover img { filter: grayscale(0); transform: scale(1.05); }
+
+    /* FINALE */
+    .c-finale { height: 100svh; overflow: hidden; display: flex; align-items: center; justify-content: center; text-align: center; }
+    .c-finale-bg { position: absolute; inset: -6% 0; background-size: cover; background-position: center 25%; filter: grayscale(.3) brightness(.55); transform: scale(1.06); }
+    .c-finale::after { content: ''; position: absolute; inset: 0; background: radial-gradient(120% 100% at 50% 50%, transparent, rgba(8,6,7,.8)); }
+    .c-finale-inner { position: relative; z-index: 2; padding: 0 8vw; }
+    .c-mono { font-family: var(--font-cormorant); font-style: italic; font-size: clamp(4rem, 12vw, 8rem); color: var(--gold); line-height: 1; }
+    .c-thanks { font-family: var(--font-cormorant); font-style: italic; font-size: clamp(1.1rem, 3vw, 1.6rem); color: #dcd2c2; margin: 18px 0 24px; }
+    .c-finale h2 { font-family: var(--font-cormorant); font-weight: 300; font-size: clamp(2.4rem, 8vw, 5rem); margin: 0; }
+    .c-finale-date { letter-spacing: .3em; font-size: 12px; text-transform: uppercase; color: #9c8f7d; margin-top: 16px; }
+
+    /* HAI GIA ĐÌNH (full-bleed, chữ overlay trên ảnh tối) */
+    .c-fams { min-height: 100svh; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+    .c-fams-bg { position: absolute; inset: -12% 0; background-size: cover; background-position: center 35%; filter: brightness(.4) grayscale(.15) contrast(1.05); will-change: transform; }
+    .c-fams::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(6,5,6,.72), rgba(6,5,6,.48) 42%, rgba(6,5,6,.86)); }
+    .c-fams-inner { position: relative; z-index: 2; width: 100%; max-width: 960px; text-align: center; padding: 14vh 8vw; }
+    .c-fams-kicker { font-size: 11px; letter-spacing: .4em; text-transform: uppercase; color: var(--gold); margin: 0 0 14px; text-shadow: 0 1px 14px rgba(0,0,0,.75); }
+    .c-fams-title { font-family: var(--font-cormorant); font-weight: 300; font-size: clamp(2.2rem, 6vw, 3.8rem); color: #f4eee3; margin: 0 0 6vh; line-height: 1; text-shadow: 0 2px 22px rgba(0,0,0,.55); }
+    .c-fams-grid { display: grid; grid-template-columns: 1fr auto 1fr; gap: clamp(20px, 5vw, 60px); align-items: start; text-shadow: 0 1px 12px rgba(0,0,0,.7); }
+    .c-fam-tag { font-size: 11px; letter-spacing: .34em; text-transform: uppercase; color: var(--gold); }
+    .c-fam-parent { font-family: var(--font-cormorant); font-size: clamp(1.2rem, 2.6vw, 1.55rem); color: #f0e9dc; margin: 12px 0 0; }
+    .c-fam-parent:first-of-type { margin-top: 22px; }
+    .c-fam-town { font-style: italic; color: #cbb9a3; font-size: 14px; margin: 12px 0 0; }
+    .c-fam-line { width: 44px; height: 1px; background: rgba(203,162,76,.6); margin: 22px auto; }
+    .c-fam-role { font-style: italic; color: var(--gold); font-size: 13px; letter-spacing: .04em; }
+    .c-fam-name { font-family: var(--font-cormorant); font-weight: 400; font-size: clamp(1.4rem, 3vw, 2rem); color: #f8f3ea; margin: 8px 0 0; line-height: 1.25; }
+    .c-fam-mid { display: flex; align-items: center; justify-content: center; padding-top: 10vh; }
+    .c-amp { font-family: var(--font-cormorant); font-style: italic; font-size: clamp(2rem, 5vw, 3.4rem); color: #d98b96; text-shadow: 0 0 26px rgba(123,30,43,.7); }
+
+    /* RSVP (full-bleed ảnh tối) */
+    .c-rsvp { min-height: 94svh; overflow: hidden; display: flex; align-items: center; justify-content: center; text-align: center; }
+    .c-rsvp-bg { position: absolute; inset: -6% 0; background-size: cover; background-position: center; filter: brightness(.4) grayscale(.3) contrast(1.05); transform: scale(1.04); }
+    .c-rsvp::after { content: ''; position: absolute; inset: 0; background: radial-gradient(120% 100% at 50% 50%, rgba(6,5,6,.35), rgba(6,5,6,.82)); }
+    .c-rsvp-inner { position: relative; z-index: 2; padding: 0 8vw; max-width: 720px; }
+    .c-rsvp-kicker { font-size: 11px; letter-spacing: .4em; text-transform: uppercase; color: var(--gold); text-shadow: 0 1px 14px rgba(0,0,0,.75); }
+    .c-rsvp h2 { font-family: var(--font-cormorant); font-weight: 300; font-size: clamp(2rem, 5.5vw, 3.6rem); color: #f4eee3; margin: 16px 0 22px; text-shadow: 0 2px 20px rgba(0,0,0,.55); }
+    .c-rsvp-inner > p { max-width: 52ch; margin: 0 auto 40px; color: #e4dbcc; font-weight: 300; line-height: 1.9; font-size: 15px; text-shadow: 0 1px 12px rgba(0,0,0,.7); }
+    .c-rsvp-actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .c-btn { display: inline-flex; align-items: center; gap: 10px; padding: 16px 36px; border: 1px solid var(--gold); color: #f4eee3; text-decoration: none; font-size: 12px; letter-spacing: .24em; text-transform: uppercase; border-radius: 999px; transition: background .4s, color .4s, transform .4s; backdrop-filter: blur(2px); }
+    .c-btn:hover { background: var(--gold); color: #1a1412; transform: translateY(-3px); }
+    .c-btn.ghost { border-color: rgba(236,230,220,.4); color: #ece6dc; }
+    .c-btn.ghost:hover { background: rgba(236,230,220,.12); color: #fff; }
+    .c-rsvp-note { margin-top: 40px; font-family: var(--font-cormorant); font-style: italic; font-size: 1.2rem; color: #cbb9a3; text-shadow: 0 1px 12px rgba(0,0,0,.7); }
+
+    @media (max-width: 820px) {
+      .c-scene-bg, .c-hero-bg, .c-finale-bg, .c-fams-bg, .c-rsvp-bg { background-attachment: scroll; }
+      .c-node { grid-template-columns: 66px 1fr; gap: 16px; }
+      .c-fams-grid { grid-template-columns: 1fr; gap: 7vh; }
+      .c-fam-mid { padding: 0; }
+      .c-fam-line { margin: 20px auto; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .c-hero-bg { animation: none; }
+      .c-scene-bg, .c-fams-bg { transform: none !important; }
+    }
+  </style>
+</Base>

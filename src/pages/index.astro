@@ -1,0 +1,139 @@
+---
+import Base from '../layouts/Base.astro';
+import { monogram, weddingDateLabel, photos } from '../data/wedding';
+
+const concepts = [
+  {
+    href: '/concept-a',
+    tag: 'Concept A',
+    name: 'Editorial Quiet Luxury',
+    desc: 'Kiểu tạp chí cao cấp — serif lớn, nhiều khoảng trắng, layout bất đối xứng. Sang & trẻ nhờ typography. Trend mạnh nhất 2026.',
+    traits: ['Tối giản', 'Sang trọng', 'Trẻ trung'],
+    img: photos.classic[1],
+    theme: 'a',
+  },
+  {
+    href: '/concept-b',
+    tag: 'Concept B',
+    name: 'Cinematic Scroll',
+    desc: 'Kiểu thước phim — ảnh full màn hình, parallax, chữ hiện dần khi cuộn, đếm ngược. Trẻ trung & hiện đại nhất.',
+    traits: ['Điện ảnh', 'Hiện đại', 'Ấn tượng'],
+    img: photos.editorialWide[0],
+    theme: 'b',
+  },
+];
+---
+
+<Base title="Chọn concept thiệp cưới — Minh Luân & Thu Trang" bodyClass="pick">
+  <div class="bg-orbs" aria-hidden="true"></div>
+
+  <header class="pk-head">
+    <div class="pk-mono">{monogram}</div>
+    <p class="pk-kicker">Thiệp cưới online · bản nháp concept</p>
+    <h1>Minh Luân <em>&amp;</em> Thu Trang</h1>
+    <p class="pk-date">{weddingDateLabel} — Thủ Đức, Sài Gòn</p>
+    <p class="pk-lead">
+      Ba hướng thiết kế để bạn xem thử với ảnh &amp; thông tin thật.
+      Bấm vào một concept để trải nghiệm toàn trang, rồi cho mình biết bạn thích hướng nào nhất nha.
+    </p>
+  </header>
+
+  <main class="pk-grid">
+    {concepts.map((c, i) => (
+      <a class={`pk-card t-${c.theme}`} href={c.href} style={`--i:${i}`}>
+        <div class="pk-thumb">
+          <img src={c.img} alt={c.name} />
+          <span class="pk-tag">{c.tag}</span>
+        </div>
+        <div class="pk-body">
+          <h2>{c.name}</h2>
+          <p class="pk-desc">{c.desc}</p>
+          <div class="pk-traits">
+            {c.traits.map((t) => <span>{t}</span>)}
+          </div>
+          <span class="pk-cta">Xem concept <b>→</b></span>
+        </div>
+      </a>
+    ))}
+  </main>
+
+  <footer class="pk-foot">
+    <p>Cả 2 concept đều dùng chung tông <b>đỏ đô · kem · nhũ vàng</b> và bộ ảnh của tụi bạn — chỉ khác nhau về "linh hồn" thiết kế.</p>
+  </footer>
+
+  <style is:global>
+    .pick {
+      --wine: #6b1522;
+      --gold: #b0863f;
+      --cream: #f6f1e7;
+      min-height: 100svh;
+      background: #120a0c;
+      color: var(--cream);
+      font-family: var(--font-be);
+      position: relative;
+      overflow-x: hidden;
+    }
+    .bg-orbs {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(40% 40% at 15% 12%, rgba(107,21,34,.5), transparent 70%),
+        radial-gradient(38% 38% at 88% 82%, rgba(176,134,63,.22), transparent 70%),
+        radial-gradient(30% 30% at 80% 8%, rgba(107,21,34,.3), transparent 70%);
+    }
+
+    .pk-head { position: relative; z-index: 1; text-align: center; padding: 9vh 6vw 5vh; }
+    .pk-mono { font-family: var(--font-fraunces); font-style: italic; font-size: 74px; color: var(--gold); line-height: 1; }
+    .pk-kicker { font-size: 12px; letter-spacing: .38em; text-transform: uppercase; color: #b79a86; margin: 18px 0 14px; }
+    .pk-head h1 { font-family: var(--font-fraunces); font-weight: 300; font-style: italic; font-size: clamp(2.6rem, 7vw, 5rem); margin: 0; line-height: 1; }
+    .pk-head h1 em { color: var(--gold); }
+    .pk-date { font-family: var(--font-fraunces); letter-spacing: .28em; font-size: 15px; color: #d8cabb; margin: 18px 0 26px; }
+    .pk-lead { max-width: 56ch; margin: 0 auto; color: #c3b3a4; font-weight: 300; line-height: 1.85; font-size: 15px; }
+
+    .pk-grid {
+      position: relative; z-index: 1;
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 28px;
+      max-width: 900px; margin: 0 auto; padding: 3vh 6vw 8vh;
+    }
+    .pk-card {
+      display: flex; flex-direction: column; text-decoration: none; color: inherit;
+      background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.08);
+      border-radius: 18px; overflow: hidden; backdrop-filter: blur(6px);
+      transition: transform .5s cubic-bezier(.22,1,.36,1), border-color .5s, box-shadow .5s;
+      opacity: 0; transform: translateY(30px); animation: cardIn .9s forwards;
+      animation-delay: calc(var(--i) * .12s + .2s);
+    }
+    @keyframes cardIn { to { opacity: 1; transform: none; } }
+    .pk-card:hover { transform: translateY(-8px); border-color: rgba(176,134,63,.5); box-shadow: 0 30px 60px -30px rgba(0,0,0,.7); }
+
+    .pk-thumb { position: relative; aspect-ratio: 4/5; overflow: hidden; }
+    .pk-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.3s ease; }
+    .pk-card:hover .pk-thumb img { transform: scale(1.06); }
+    .pk-thumb::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(18,10,12,.9), transparent 45%); }
+    .pk-tag {
+      position: absolute; top: 14px; left: 14px; z-index: 2;
+      font-size: 10px; letter-spacing: .24em; text-transform: uppercase;
+      background: rgba(18,10,12,.6); border: 1px solid rgba(176,134,63,.5);
+      color: var(--gold); padding: 6px 12px; border-radius: 999px;
+    }
+    .t-a .pk-tag { color: #e8c98a; }
+    .t-b .pk-tag { color: #cdd6e0; border-color: rgba(205,214,224,.4); }
+    .t-c .pk-tag { color: #e6b7bd; border-color: rgba(230,183,189,.4); }
+
+    .pk-body { padding: 22px 22px 26px; display: flex; flex-direction: column; flex: 1; }
+    .pk-body h2 { font-family: var(--font-fraunces); font-weight: 400; font-size: 24px; margin: 0 0 10px; color: var(--cream); }
+    .pk-desc { font-size: 13.5px; color: #b6a596; line-height: 1.7; font-weight: 300; margin: 0 0 16px; flex: 1; }
+    .pk-traits { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 20px; }
+    .pk-traits span { font-size: 11px; letter-spacing: .06em; color: #d8cabb; border: 1px solid rgba(255,255,255,.14); padding: 4px 10px; border-radius: 999px; }
+    .pk-cta { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); }
+    .pk-cta b { transition: transform .4s; }
+    .pk-card:hover .pk-cta b { transform: translateX(6px); }
+
+    .pk-foot { position: relative; z-index: 1; text-align: center; padding: 0 6vw 8vh; }
+    .pk-foot p { max-width: 60ch; margin: 0 auto; color: #9a8979; font-size: 13.5px; font-weight: 300; line-height: 1.8; }
+    .pk-foot b { color: var(--gold); font-weight: 500; }
+
+    @media (max-width: 900px) {
+      .pk-grid { grid-template-columns: 1fr; max-width: 460px; }
+    }
+  </style>
+</Base>

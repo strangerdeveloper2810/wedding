@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+@theme {
+  --font-fraunces: "Fraunces", serif;
+  --font-cormorant: "Cormorant Garamond", serif;
+  --font-garamond: "EB Garamond", serif;
+  --font-playfair: "Playfair Display", serif;
+  --font-be: "Be Vietnam Pro", sans-serif;
+  --font-dancing: "Dancing Script", cursive;
+
+  /* Bảng màu chung "LT" — đỏ đô · kem · nhũ vàng */
+  --color-wine-900: #4a0d16;
+  --color-wine-800: #5e1220;
+  --color-wine-700: #7b1e2b;
+  --color-wine-600: #9b2c39;
+  --color-cream: #f7f2e9;
+  --color-ivory: #fbf8f2;
+  --color-gold-400: #c9a24b;
+  --color-gold-500: #b0863f;
+  --color-ink: #24140f;
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Reveal-on-scroll dùng chung cho các concept */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 1s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+.reveal.in {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+}

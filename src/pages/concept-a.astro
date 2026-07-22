@@ -1,0 +1,388 @@
+---
+import Base from '../layouts/Base.astro';
+import {
+  groom,
+  bride,
+  monogram,
+  verse,
+  events,
+  photos,
+  weddingDateISO,
+  weddingDateLabel,
+} from '../data/wedding';
+
+const nav = [
+  { id: 'moi', label: 'Thiệp mời' },
+  { id: 'chuyen', label: 'Chuyện tình' },
+  { id: 'sukien', label: 'Sự kiện' },
+  { id: 'album', label: 'Khoảnh khắc' },
+];
+const gallery = [...photos.classic, ...photos.editorial, ...photos.mono];
+---
+
+<Base title="Editorial Quiet Luxury — Minh Luân & Thu Trang" bodyClass="ea">
+  <!-- Điều hướng dọc tối giản -->
+  <nav class="side-nav" aria-label="Mục lục">
+    <a class="brand" href="#top">{monogram}</a>
+    <ul>
+      {nav.map((n) => (
+        <li><a href={`#${n.id}`}>{n.label}</a></li>
+      ))}
+    </ul>
+    <span class="side-date">{weddingDateLabel}</span>
+  </nav>
+
+  <main id="top">
+    <!-- HERO — editorial split, chữ serif lớn + ảnh full-bleed -->
+    <header class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Trân trọng báo tin · Save the date</p>
+        <h1>
+          <span class="n1">Minh Luân</span>
+          <span class="amp">&amp;</span>
+          <span class="n2">Thu Trang</span>
+        </h1>
+        <div class="hero-meta">
+          <span>{weddingDateLabel}</span>
+          <span class="dot">✦</span>
+          <span>Thủ Đức · Sài Gòn</span>
+        </div>
+        <p class="hero-note">
+          Micae Nguyễn Võ Minh Luân — Maria Nguyễn Thị Thu Trang.
+          Một lời mời trân trọng đến buổi tiệc chung vui của chúng tôi.
+        </p>
+      </div>
+      <figure class="hero-fig">
+        <img src={photos.classic[0]} alt="Minh Luân và Thu Trang" />
+        <figcaption>№ 01 — L&amp;T</figcaption>
+      </figure>
+      <div class="scroll-cue">Cuộn xuống <span>↓</span></div>
+    </header>
+
+    <!-- CÂU KINH THÁNH -->
+    <section class="verse reveal" id="moi">
+      <div class="cross" aria-hidden="true"></div>
+      <blockquote>“{verse.text}”</blockquote>
+      <cite>— {verse.ref}</cite>
+    </section>
+
+    <!-- CHUYỆN TÌNH — editorial xen kẽ -->
+    <section class="story" id="chuyen">
+      <div class="story-head reveal">
+        <span class="tag">Chương một</span>
+        <h2>Chúng mình<br /><em>về chung một nhà</em></h2>
+      </div>
+
+      <div class="story-row reveal">
+        <figure class="sr-img"><img src={photos.editorial[0]} alt="" /></figure>
+        <div class="sr-text">
+          <span class="num">01</span>
+          <h3>Chú rể</h3>
+          <p class="who">{groom.saintName} {groom.fullName}</p>
+          <p class="fam">{groom.role} · {groom.father} &amp; {groom.mother}</p>
+          <p class="place">{groom.hometown}</p>
+        </div>
+      </div>
+
+      <div class="story-row alt reveal">
+        <figure class="sr-img"><img src={photos.classic[3]} alt="" /></figure>
+        <div class="sr-text">
+          <span class="num">02</span>
+          <h3>Cô dâu</h3>
+          <p class="who">{bride.saintName} {bride.fullName}</p>
+          <p class="fam">{bride.role} · {bride.father} &amp; {bride.mother}</p>
+          <p class="place">{bride.hometown}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ĐẾM NGƯỢC -->
+    <section class="count reveal">
+      <p class="count-lead">Đếm ngược đến ngày hạnh phúc</p>
+      <div class="count-grid" id="cd-a">
+        <div><b data-d>00</b><span>Ngày</span></div>
+        <div><b data-h>00</b><span>Giờ</span></div>
+        <div><b data-m>00</b><span>Phút</span></div>
+        <div><b data-s>00</b><span>Giây</span></div>
+      </div>
+    </section>
+
+    <!-- SỰ KIỆN -->
+    <section class="events" id="sukien">
+      <div class="events-head reveal">
+        <span class="tag">Chương hai</span>
+        <h2>Lịch trình<br /><em>hôn lễ</em></h2>
+      </div>
+      <div class="ev-grid">
+        {events.map((e, i) => (
+          <article class="ev-card reveal" style={`transition-delay:${i * 90}ms`}>
+            <span class="ev-side">{e.side}</span>
+            <h3>{e.title}</h3>
+            {e.time && <p class="ev-time">{e.time}{e.reception ? ` · ${e.reception}` : ''}</p>}
+            <p class="ev-date">{e.weekday ? `${e.weekday}, ` : ''}{e.date}</p>
+            {e.lunar && <p class="ev-lunar">{e.lunar}</p>}
+            <div class="ev-rule"></div>
+            <p class="ev-venue">{e.venue}</p>
+            <p class="ev-addr">{e.address}</p>
+            <a
+              class="ev-map"
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.mapQuery)}`}
+              target="_blank"
+              rel="noopener">Xem bản đồ →</a>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <!-- ALBUM -->
+    <section class="album" id="album">
+      <div class="album-head reveal">
+        <span class="tag">Chương ba</span>
+        <h2>Khoảnh khắc</h2>
+      </div>
+      <div class="masonry">
+        {gallery.map((src, i) => (
+          <figure class="reveal" style={`transition-delay:${(i % 5) * 70}ms`}>
+            <img src={src} alt={`Ảnh cưới ${i + 1}`} loading="lazy" />
+          </figure>
+        ))}
+      </div>
+    </section>
+
+    <!-- LỜI NGỎ / FOOTER -->
+    <footer class="foot reveal">
+      <div class="foot-mono">{monogram}</div>
+      <p class="foot-thanks">
+        Sự hiện diện của Quý khách là niềm vinh hạnh cho gia đình chúng tôi.
+      </p>
+      <p class="foot-names">Minh Luân &amp; Thu Trang</p>
+      <p class="foot-date">{weddingDateLabel}</p>
+    </footer>
+  </main>
+
+  <script is:inline define:vars={{ weddingDateISO }}>
+    // Reveal on scroll
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((en) => {
+          if (en.isIntersecting) {
+            en.target.classList.add('in');
+            io.unobserve(en.target);
+          }
+        });
+      },
+      { threshold: 0.15 }
+    );
+    document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+
+    // Countdown
+    const target = new Date(weddingDateISO).getTime();
+    const box = document.getElementById('cd-a');
+    function tick() {
+      const now = Date.now();
+      let diff = Math.max(0, target - now);
+      const d = Math.floor(diff / 86400000);
+      diff -= d * 86400000;
+      const h = Math.floor(diff / 3600000);
+      diff -= h * 3600000;
+      const m = Math.floor(diff / 60000);
+      diff -= m * 60000;
+      const s = Math.floor(diff / 1000);
+      const p = (n) => String(n).padStart(2, '0');
+      if (!box) return;
+      box.querySelector('[data-d]').textContent = p(d);
+      box.querySelector('[data-h]').textContent = p(h);
+      box.querySelector('[data-m]').textContent = p(m);
+      box.querySelector('[data-s]').textContent = p(s);
+    }
+    tick();
+    setInterval(tick, 1000);
+  </script>
+
+  <style is:global>
+    .ea {
+      --wine: #6b1522;
+      --wine-deep: #4a0d16;
+      --cream: #f6f1e7;
+      --paper: #fbf8f1;
+      --gold: #b0863f;
+      --ink: #2a1a14;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--font-be);
+    }
+    main { overflow-x: clip; }
+
+    /* Side nav */
+    .side-nav {
+      position: fixed; left: 0; top: 0; bottom: 0; width: 72px; z-index: 40;
+      display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+      padding: 22px 0; mix-blend-mode: difference;
+    }
+    .side-nav .brand {
+      font-family: var(--font-fraunces); font-size: 26px; letter-spacing: 1px;
+      color: #fff; text-decoration: none;
+    }
+    .side-nav ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 20px; }
+    .side-nav ul a {
+      writing-mode: vertical-rl; text-orientation: mixed;
+      font-size: 11px; letter-spacing: .28em; text-transform: uppercase;
+      color: #fff; text-decoration: none; opacity: .85; transition: opacity .3s;
+    }
+    .side-nav ul a:hover { opacity: 1; }
+    .side-date { writing-mode: vertical-rl; font-size: 10px; letter-spacing: .3em; color: #fff; opacity: .7; }
+
+    /* HERO */
+    .hero {
+      position: relative; min-height: 100svh;
+      display: grid; grid-template-columns: 1.05fr 0.95fr; align-items: center;
+      padding-left: 72px;
+    }
+    .hero-copy { padding: 6vw 4vw 6vw 6vw; }
+    .eyebrow {
+      font-size: 12px; letter-spacing: .34em; text-transform: uppercase;
+      color: var(--wine); margin: 0 0 26px;
+    }
+    .hero h1 { margin: 0; line-height: .92; font-weight: 400; }
+    .hero h1 span { display: block; font-family: var(--font-fraunces); color: var(--wine-deep); }
+    .hero h1 .n1, .hero h1 .n2 {
+      font-size: clamp(3rem, 8vw, 6.6rem); font-optical-sizing: auto;
+      font-style: italic; font-weight: 400;
+    }
+    .hero h1 .amp {
+      font-size: clamp(1.4rem, 3vw, 2.4rem); color: var(--gold);
+      margin: .1em 0 .1em .1em; font-style: italic;
+    }
+    .hero-meta {
+      display: flex; align-items: center; gap: 16px; margin: 30px 0 24px;
+      font-family: var(--font-fraunces); font-size: 18px; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--ink);
+    }
+    .hero-meta .dot { color: var(--gold); font-size: 12px; }
+    .hero-note { max-width: 40ch; color: #6a5348; font-size: 15px; line-height: 1.85; font-weight: 300; }
+
+    .hero-fig { position: relative; height: 100svh; margin: 0; overflow: hidden; }
+    .hero-fig img { width: 100%; height: 100%; object-fit: cover; filter: saturate(.96) contrast(1.02); }
+    .hero-fig::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(90deg, var(--paper) 0%, transparent 22%);
+      pointer-events: none;
+    }
+    .hero-fig figcaption {
+      position: absolute; bottom: 22px; right: 24px; color: #fff;
+      font-family: var(--font-fraunces); font-style: italic; font-size: 15px; letter-spacing: .1em;
+      text-shadow: 0 1px 10px rgba(0,0,0,.4);
+    }
+    .scroll-cue {
+      position: absolute; bottom: 26px; left: calc(72px + 6vw);
+      font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: var(--wine);
+    }
+    .scroll-cue span { display: inline-block; animation: bob 1.8s ease-in-out infinite; }
+    @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
+
+    /* VERSE */
+    .verse {
+      text-align: center; padding: 12vh 8vw; max-width: 1000px; margin: 0 auto;
+    }
+    .cross {
+      width: 1px; height: 46px; background: var(--gold); margin: 0 auto 34px; position: relative;
+    }
+    .cross::before {
+      content: ''; position: absolute; top: 14px; left: -9px; width: 19px; height: 1px; background: var(--gold);
+    }
+    .verse blockquote {
+      margin: 0; font-family: var(--font-fraunces); font-style: italic; font-weight: 300;
+      font-size: clamp(1.5rem, 3.6vw, 2.8rem); line-height: 1.4; color: var(--wine-deep);
+    }
+    .verse cite { display: block; margin-top: 26px; font-style: normal; font-size: 12px; letter-spacing: .28em; text-transform: uppercase; color: var(--gold); }
+
+    /* Shared section heads */
+    .tag { font-size: 11px; letter-spacing: .34em; text-transform: uppercase; color: var(--gold); }
+    .story-head h2, .events-head h2, .album-head h2 {
+      font-family: var(--font-fraunces); font-weight: 400; color: var(--wine-deep);
+      font-size: clamp(2.2rem, 5vw, 3.8rem); line-height: 1.02; margin: 14px 0 0;
+    }
+    .story-head em, .events-head em { font-style: italic; color: var(--gold); }
+
+    /* STORY */
+    .story { padding: 8vh 6vw 4vh calc(72px + 6vw); }
+    .story-head { margin-bottom: 6vh; }
+    .story-row {
+      display: grid; grid-template-columns: 0.9fr 1.1fr; gap: clamp(24px, 5vw, 76px);
+      align-items: center; margin-bottom: 10vh;
+    }
+    .story-row.alt { grid-template-columns: 1.1fr 0.9fr; }
+    .story-row.alt .sr-img { order: 2; }
+    .sr-img { margin: 0; overflow: hidden; aspect-ratio: 4/5; }
+    .sr-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.4s ease; }
+    .story-row:hover .sr-img img { transform: scale(1.04); }
+    .sr-text .num { font-family: var(--font-fraunces); font-style: italic; font-size: 40px; color: var(--gold); opacity: .5; }
+    .sr-text h3 { font-family: var(--font-fraunces); font-size: 30px; font-weight: 400; margin: 4px 0 16px; color: var(--wine); }
+    .sr-text .who { font-family: var(--font-fraunces); font-style: italic; font-size: 22px; color: var(--ink); margin: 0 0 10px; }
+    .sr-text .fam { color: #6a5348; font-size: 14px; line-height: 1.7; font-weight: 300; margin: 0 0 4px; max-width: 34ch; }
+    .sr-text .place { color: var(--gold); font-size: 13px; letter-spacing: .06em; }
+
+    /* COUNTDOWN */
+    .count { text-align: center; padding: 8vh 6vw; background: var(--cream); }
+    .count-lead { font-size: 12px; letter-spacing: .32em; text-transform: uppercase; color: var(--wine); margin: 0 0 34px; }
+    .count-grid { display: flex; justify-content: center; gap: clamp(20px, 6vw, 68px); }
+    .count-grid div { display: flex; flex-direction: column; gap: 8px; }
+    .count-grid b {
+      font-family: var(--font-fraunces); font-weight: 300; font-size: clamp(2.4rem, 7vw, 4.6rem);
+      color: var(--wine-deep); font-variant-numeric: tabular-nums; line-height: 1;
+    }
+    .count-grid span { font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: var(--gold); }
+
+    /* EVENTS */
+    .events { padding: 10vh 6vw 6vh calc(72px + 6vw); }
+    .events-head { margin-bottom: 6vh; }
+    .ev-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2px; background: #e7ddca; border: 1px solid #e7ddca; }
+    .ev-card { background: var(--paper); padding: 40px 34px; transition: background .5s, transform 1s cubic-bezier(.22,1,.36,1), opacity 1s; }
+    .ev-card:hover { background: #fffdf8; }
+    .ev-side { font-size: 10px; letter-spacing: .3em; text-transform: uppercase; color: var(--gold); }
+    .ev-card h3 { font-family: var(--font-fraunces); font-size: 27px; font-weight: 400; color: var(--wine); margin: 12px 0 14px; }
+    .ev-time { font-family: var(--font-fraunces); font-style: italic; font-size: 19px; color: var(--ink); margin: 0 0 4px; }
+    .ev-date { font-size: 14px; color: var(--ink); margin: 0; }
+    .ev-lunar { font-size: 12px; color: #8a7565; font-style: italic; margin: 4px 0 0; }
+    .ev-rule { height: 1px; background: linear-gradient(90deg, var(--gold), transparent); margin: 20px 0; }
+    .ev-venue { font-weight: 500; font-size: 15px; margin: 0 0 4px; }
+    .ev-addr { font-size: 13px; color: #6a5348; line-height: 1.6; margin: 0 0 18px; font-weight: 300; }
+    .ev-map { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--wine); text-decoration: none; border-bottom: 1px solid var(--gold); padding-bottom: 3px; }
+    .ev-map:hover { color: var(--gold); }
+
+    /* ALBUM masonry */
+    .album { padding: 10vh 6vw; }
+    .album-head { text-align: center; margin-bottom: 6vh; }
+    .masonry { columns: 3; column-gap: 14px; }
+    .masonry figure { margin: 0 0 14px; break-inside: avoid; overflow: hidden; }
+    .masonry img { width: 100%; display: block; transition: transform 1.2s ease, filter 1.2s ease; filter: saturate(.97); }
+    .masonry figure:hover img { transform: scale(1.05); filter: saturate(1.05); }
+
+    /* FOOTER */
+    .foot { text-align: center; padding: 14vh 6vw 10vh; background: var(--wine-deep); color: var(--cream); }
+    .foot-mono { font-family: var(--font-fraunces); font-style: italic; font-size: 64px; color: var(--gold); }
+    .foot-thanks { max-width: 44ch; margin: 22px auto 40px; font-weight: 300; line-height: 1.9; opacity: .9; }
+    .foot-names { font-family: var(--font-fraunces); font-style: italic; font-size: clamp(2rem, 6vw, 3.4rem); margin: 0; }
+    .foot-date { letter-spacing: .3em; font-size: 12px; margin-top: 12px; opacity: .7; }
+
+    @media (max-width: 900px) {
+      .side-nav { flex-direction: row; width: 100%; height: 54px; bottom: auto; padding: 0 18px; background: rgba(74,13,22,.9); mix-blend-mode: normal; justify-content: space-between; }
+      .side-nav ul { flex-direction: row; gap: 16px; }
+      .side-nav ul a { writing-mode: horizontal-tb; font-size: 10px; }
+      .side-date { writing-mode: horizontal-tb; }
+      .hero { grid-template-columns: 1fr; padding-left: 0; padding-top: 54px; }
+      .hero-copy { padding: 8vw 8vw 4vw; order: 2; }
+      .hero-fig { height: 62vh; order: 1; }
+      .hero-fig::after { background: linear-gradient(0deg, var(--paper) 0%, transparent 30%); }
+      .scroll-cue { display: none; }
+      .story, .events { padding-left: 8vw; padding-right: 8vw; }
+      .story-row, .story-row.alt { grid-template-columns: 1fr; }
+      .story-row.alt .sr-img { order: 0; }
+      .masonry { columns: 2; }
+    }
+    @media (max-width: 560px) {
+      .masonry { columns: 1; }
+      .count-grid { gap: 18px; }
+    }
+  </style>
+</Base>
