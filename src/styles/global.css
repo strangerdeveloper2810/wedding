@@ -25,6 +25,11 @@
   text-rendering: optimizeLegibility;
 }
 
+/* <picture> không tạo box riêng → <img> bên trong layout như con trực tiếp */
+picture {
+  display: contents;
+}
+
 html {
   scroll-behavior: smooth;
 }

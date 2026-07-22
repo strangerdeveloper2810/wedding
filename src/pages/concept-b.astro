@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import MusicPlayer from '../components/MusicPlayer.astro';
 import {
   groom,
   bride,
@@ -36,7 +37,14 @@ const strip = [
 ];
 ---
 
-<Base title="Cinematic Scroll — Minh Luân & Thu Trang" bodyClass="cb">
+<Base
+  title="Minh Luân & Thu Trang — Thiệp cưới 08.08.2026"
+  description="Trân trọng kính mời bạn đến chung vui trong ngày lễ thành hôn của Minh Luân & Thu Trang — 08.08.2026 tại Nhà thờ Phanxicô Xaviê, Thủ Đức, Sài Gòn."
+  path="/concept-b"
+  image="/og-image.jpg"
+  themeColor="#0d0b0c"
+  bodyClass="cb"
+>
   <div class="progress" id="prog" aria-hidden="true"></div>
   <div class="grain" aria-hidden="true"></div>
 
@@ -176,6 +184,8 @@ const strip = [
       <p class="c-finale-date">{weddingDateLabel} · Thủ Đức, Sài Gòn</p>
     </div>
   </section>
+
+  <MusicPlayer variant="dark" trigger=".c-time" />
 
   <script is:inline define:vars={{ weddingDateISO }}>
     // Reveal

@@ -1,17 +1,52 @@
 ---
 import '../styles/global.css';
+import { groom, bride, weddingDateISO, events } from '../data/wedding';
 
 interface Props {
   title: string;
   description?: string;
   bodyClass?: string;
+  /** Ảnh preview khi share link (đường dẫn tương đối trong /public) */
+  image?: string;
+  /** Đường dẫn trang, dùng cho canonical & og:url */
+  path?: string;
+  /** Màu thanh trình duyệt / theme */
+  themeColor?: string;
 }
 
 const {
   title,
-  description = 'Thiệp cưới online — Minh Luân & Thu Trang · 08.08.2026',
+  description = 'Thiệp cưới online của Minh Luân & Thu Trang — trân trọng kính mời bạn đến chung vui trong ngày lễ thành hôn 08.08.2026 tại Thủ Đức, Sài Gòn.',
   bodyClass = '',
+  image = '/og-image.jpg',
+  path,
+  themeColor = '#4a0d16',
 } = Astro.props;
+
+const site = Astro.site ?? new URL('http://localhost:4321');
+const canonical = new URL(path ?? Astro.url.pathname, site);
+const ogImage = new URL(image, site);
+
+const honphoi = events.find((e) => e.key === 'honphoi');
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Event',
+  name: `Lễ Thành Hôn ${groom.short} & ${bride.short}`,
+  startDate: weddingDateISO,
+  eventStatus: 'https://schema.org/EventScheduled',
+  eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+  description,
+  image: [ogImage.href],
+  location: {
+    '@type': 'Place',
+    name: honphoi?.venue,
+    address: honphoi?.address,
+  },
+  organizer: [
+    { '@type': 'Person', name: groom.fullName },
+    { '@type': 'Person', name: bride.fullName },
+  ],
+};
 ---
 
 <!doctype html>
@@ -20,15 +55,53 @@ const {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
+
+    <!-- Primary -->
     <title>{title}</title>
     <meta name="description" content={description} />
-    <link rel="icon" href="/assets/concept-1.jpeg" />
+    <meta name="author" content={`${groom.fullName} & ${bride.fullName}`} />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="theme-color" content={themeColor} />
+    <meta name="format-detection" content="telephone=no" />
+    <link rel="canonical" href={canonical} />
+
+    <!-- Open Graph (Facebook, Zalo, Messenger…) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Minh Luân & Thu Trang" />
+    <meta property="og:locale" content="vi_VN" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:secure_url" content={ogImage} />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Ảnh cưới Minh Luân & Thu Trang" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="apple-mobile-web-app-title" content="L & T" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Cormorant+Garamond:ital,wght@0,300..600;1,300..500&family=EB+Garamond:ital,wght@0,400..600;1,400..500&family=Playfair+Display:ital,wght@0,400..700;1,400..600&family=Be+Vietnam+Pro:wght@200;300;400;500;600&family=Dancing+Script:wght@500..700&display=swap"
       rel="stylesheet"
     />
+
+    <!-- Structured data -->
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} is:inline />
+
     <slot name="head" />
   </head>
   <body class={bodyClass}>

@@ -1,0 +1,176 @@
+---
+interface Props {
+  /** Bài KHÔNG lời — phát khi mới vào trang */
+  intro?: string;
+  /** Bài CÓ lời — phát khi cuộn tới phần `trigger` */
+  main?: string;
+  /** CSS selector: khi phần tử này vào giữa màn hình → chuyển sang `main` */
+  trigger?: string;
+  /** 'light' cho nền sáng (concept A), 'dark' cho nền tối (concept B) */
+  variant?: 'light' | 'dark';
+}
+const {
+  intro = '/music/khong-loi.mp3',
+  main = '/music/em-dong-y.mp3',
+  trigger = '#sukien',
+  variant = 'dark',
+} = Astro.props;
+---
+
+<button
+  class:list={['music-toggle', variant]}
+  id="musicToggle"
+  type="button"
+  aria-label="Bật/tắt nhạc nền"
+  aria-pressed="false"
+  title="Nhạc nền"
+>
+  <span class="mt-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+</button>
+<audio
+  id="bgAudio"
+  data-intro={intro}
+  data-main={main}
+  data-trigger={trigger}
+  preload="none"></audio>
+
+<script is:inline>
+  (function () {
+    const btn = document.getElementById('musicToggle');
+    const audio = document.getElementById('bgAudio');
+    if (!btn || !audio) return;
+
+    const intro = audio.dataset.intro || '';
+    const main = audio.dataset.main || '';
+    const trigger = audio.dataset.trigger || '';
+    let playing = false;
+
+    audio.loop = true; // mỗi bài tự lặp cho tới khi đổi bài
+    if (intro) audio.src = intro;
+
+    function setState(p) {
+      playing = p;
+      btn.classList.toggle('playing', p);
+      btn.setAttribute('aria-pressed', String(p));
+    }
+    function play() { audio.play().catch(function () {}); }
+    function pause() { audio.pause(); }
+
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      playing ? pause() : play();
+    });
+    audio.addEventListener('play', function () { setState(true); });
+    audio.addEventListener('pause', function () { setState(false); });
+
+    // Phát khi khách CUỘN / chạm / bấm lần đầu.
+    // Chỉ gỡ listener khi phát THÀNH CÔNG — nếu bị chặn (vd desktop cuộn chuột)
+    // thì giữ lại để lần chạm/click sau vẫn kích hoạt được.
+    const gestures = ['scroll', 'wheel', 'touchstart', 'pointerdown', 'keydown', 'click'];
+    function off() { gestures.forEach((ev) => window.removeEventListener(ev, tryPlay)); }
+    function tryPlay() {
+      if (playing) { off(); return; }
+      audio.play().then(off).catch(function () {});
+    }
+    gestures.forEach((ev) => window.addEventListener(ev, tryPlay, { passive: true }));
+
+    // Đổi bài theo VỊ TRÍ cuộn (2 chiều):
+    //  - phía trên "Lịch trình hôn lễ"  → bài KHÔNG lời
+    //  - từ "Lịch trình hôn lễ" trở xuống → bài CÓ lời (Em Đồng Ý)
+    // Vùng đệm 0.45–0.55 màn hình để không nhấp nháy ngay ranh giới.
+    if (main && intro && trigger) {
+      const el = document.querySelector(trigger);
+      if (el) {
+        let current = 'intro';
+        const syncTrack = function () {
+          const top = el.getBoundingClientRect().top;
+          const h = window.innerHeight;
+          let want = current;
+          if (current !== 'main' && top <= h * 0.45) want = 'main';
+          else if (current !== 'intro' && top >= h * 0.55) want = 'intro';
+          if (want !== current) {
+            current = want;
+            const wasPlaying = playing;
+            audio.src = want === 'main' ? main : intro; // đổi src = phát lại từ đầu
+            if (wasPlaying) play();
+          }
+        };
+        window.addEventListener('scroll', syncTrack, { passive: true });
+        syncTrack();
+      }
+    }
+  })();
+</script>
+
+<style>
+  .music-toggle {
+    position: fixed;
+    z-index: 50;
+    right: 22px;
+    bottom: 22px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    border: 1px solid;
+    backdrop-filter: blur(6px);
+    transition: transform 0.35s ease, background 0.35s ease, box-shadow 0.35s ease;
+    animation: mt-pulse 2.6s ease-in-out infinite;
+  }
+  .music-toggle:hover { transform: scale(1.08); }
+
+  /* Biến thể tối (nền đậm — concept B) */
+  .music-toggle.dark {
+    background: rgba(13, 11, 12, 0.55);
+    border-color: rgba(203, 162, 76, 0.6);
+    box-shadow: 0 8px 26px -12px rgba(0, 0, 0, 0.7);
+    --bar: #cba24c;
+  }
+  /* Biến thể sáng (nền kem — concept A) */
+  .music-toggle.light {
+    background: rgba(251, 248, 241, 0.75);
+    border-color: rgba(107, 21, 34, 0.5);
+    box-shadow: 0 8px 26px -14px rgba(74, 13, 22, 0.4);
+    --bar: #6b1522;
+  }
+
+  .mt-bars {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    height: 18px;
+  }
+  .mt-bars i {
+    width: 3px;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--bar);
+    transform-origin: bottom;
+  }
+  /* Khi đang phát: các thanh nhảy như equalizer */
+  .music-toggle.playing { animation: none; }
+  .music-toggle.playing .mt-bars i { animation: mt-eq 0.9s ease-in-out infinite; }
+  .music-toggle.playing .mt-bars i:nth-child(1) { animation-delay: -0.2s; }
+  .music-toggle.playing .mt-bars i:nth-child(2) { animation-delay: -0.5s; }
+  .music-toggle.playing .mt-bars i:nth-child(3) { animation-delay: -0.1s; }
+  .music-toggle.playing .mt-bars i:nth-child(4) { animation-delay: -0.35s; }
+
+  @keyframes mt-eq {
+    0%, 100% { height: 5px; }
+    50% { height: 16px; }
+  }
+  @keyframes mt-pulse {
+    0%, 100% { box-shadow: 0 8px 26px -12px rgba(0, 0, 0, 0.5), 0 0 0 0 rgba(203, 162, 76, 0.35); }
+    50% { box-shadow: 0 8px 26px -12px rgba(0, 0, 0, 0.5), 0 0 0 8px rgba(203, 162, 76, 0); }
+  }
+
+  @media (max-width: 900px) {
+    .music-toggle { right: 16px; bottom: 74px; } /* tránh đè thanh nav dưới của concept A */
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .music-toggle, .music-toggle .mt-bars i { animation: none !important; }
+    .music-toggle.playing .mt-bars i:nth-child(odd) { height: 14px; }
+  }
+</style>

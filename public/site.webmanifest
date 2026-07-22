@@ -1,0 +1,14 @@
+{
+  "name": "Minh Luân & Thu Trang — Thiệp cưới",
+  "short_name": "L & T",
+  "description": "Thiệp cưới online Minh Luân & Thu Trang · 08.08.2026",
+  "lang": "vi",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#faf5ea",
+  "theme_color": "#4a0d16",
+  "icons": [
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
