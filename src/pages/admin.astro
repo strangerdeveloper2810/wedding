@@ -1,0 +1,267 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base
+  title="Quản trị — Xác nhận tham dự"
+  description="Trang quản trị"
+  path="/admin"
+  noindex
+  bodyClass="adm"
+>
+  <main class="adm-wrap">
+    <!-- ĐĂNG NHẬP -->
+    <section class="adm-login" id="loginView">
+      <form class="adm-card" id="loginForm">
+        <div class="adm-mono">LT</div>
+        <span class="tag">Khu vực quản trị</span>
+        <h1>Xác nhận tham dự</h1>
+        <p class="adm-sub">Đăng nhập để xem danh sách khách mời.</p>
+        <label>Email
+          <input name="email" type="email" required autocomplete="username" placeholder="email@…" />
+        </label>
+        <label>Mật khẩu
+          <input name="password" type="password" required autocomplete="current-password" placeholder="••••••••" />
+        </label>
+        <button type="submit" class="adm-btn">Đăng nhập</button>
+        <p class="adm-msg" data-login-msg></p>
+      </form>
+    </section>
+
+    <!-- DASHBOARD -->
+    <section class="adm-dash" id="dashView" hidden>
+      <header class="adm-top">
+        <div>
+          <span class="tag">Quản trị · Minh Luân &amp; Thu Trang</span>
+          <h1>Xác nhận tham dự</h1>
+        </div>
+        <div class="adm-top-right">
+          <button class="adm-refresh" id="refreshBtn" title="Tải lại">↻</button>
+          <button class="adm-logout" id="logoutBtn">Đăng xuất</button>
+        </div>
+      </header>
+
+      <div class="adm-stats" id="stats"></div>
+
+      <div class="adm-toolbar">
+        <input class="adm-search" id="search" type="search" placeholder="Tìm theo tên…" />
+        <span class="adm-count" id="rowCount"></span>
+      </div>
+
+      <div class="adm-tablewrap">
+        <table class="adm-table">
+          <thead>
+            <tr><th>Tên</th><th>Dự tiệc</th><th class="num">Số người</th><th>Lời nhắn</th><th>Lúc</th></tr>
+          </thead>
+          <tbody id="rsvpBody"></tbody>
+        </table>
+        <p class="adm-empty" id="emptyRow" hidden>Chưa có xác nhận nào.</p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    import { supabase } from '../lib/supabase';
+
+    const $ = (s: string) => document.querySelector(s);
+    const loginView = $('#loginView') as HTMLElement;
+    const dashView = $('#dashView') as HTMLElement;
+    const loginForm = $('#loginForm') as HTMLFormElement;
+    const statsEl = $('#stats') as HTMLElement;
+    const bodyEl = $('#rsvpBody') as HTMLElement;
+    const emptyRow = $('#emptyRow') as HTMLElement;
+    const searchEl = $('#search') as HTMLInputElement;
+    const rowCount = $('#rowCount') as HTMLElement;
+
+    type Rsvp = { guest_name: string; attendance: string; guest_count: number; message: string | null; created_at: string };
+    const LABEL: Record<string, string> = {
+      nha_gai: 'Nhà gái · Thủ Đức', nha_trai: 'Nhà trai · Vĩnh Long', ca_hai: 'Cả hai', khong: 'Không dự được',
+    };
+    let rows: Rsvp[] = [];
+
+    function fmt(iso: string) {
+      try { return new Date(iso).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); }
+      catch { return ''; }
+    }
+    function loginMsg(t: string) { const m = $('[data-login-msg]') as HTMLElement; if (m) m.textContent = t; }
+
+    async function refreshSession() {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) { showDash(); } else { showLogin(); }
+    }
+    function showLogin() { dashView.hidden = true; loginView.hidden = false; }
+    async function showDash() { loginView.hidden = true; dashView.hidden = false; await load(); }
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      loginMsg('');
+      const fd = new FormData(loginForm);
+      const btn = loginForm.querySelector('.adm-btn') as HTMLButtonElement;
+      btn.disabled = true;
+      const { error } = await supabase.auth.signInWithPassword({
+        email: String(fd.get('email')), password: String(fd.get('password')),
+      });
+      btn.disabled = false;
+      if (error) { loginMsg('Sai email hoặc mật khẩu.'); return; }
+      showDash();
+    });
+    ($('#logoutBtn') as HTMLElement).addEventListener('click', async () => {
+      await supabase.auth.signOut(); showLogin();
+    });
+    ($('#refreshBtn') as HTMLElement).addEventListener('click', load);
+
+    async function load() {
+      const { data, error } = await supabase
+        .from('rsvp')
+        .select('guest_name,attendance,guest_count,message,created_at')
+        .order('created_at', { ascending: false });
+      if (error) { statsEl.innerHTML = '<p class="adm-err">Không đọc được dữ liệu — kiểm tra RLS policy cho vai trò authenticated.</p>'; return; }
+      rows = (data || []) as Rsvp[];
+      renderStats(); renderTable(searchEl.value);
+    }
+
+    function sumPeople(pred: (r: Rsvp) => boolean) {
+      return rows.filter(pred).reduce((s, r) => s + (r.guest_count || 0), 0);
+    }
+    function tile(num: string | number, label: string) {
+      return `<div class="adm-tile"><b>${num}</b><span>${label}</span></div>`;
+    }
+    function renderStats() {
+      const nhaGai = sumPeople((r) => r.attendance === 'nha_gai' || r.attendance === 'ca_hai');
+      const nhaTrai = sumPeople((r) => r.attendance === 'nha_trai' || r.attendance === 'ca_hai');
+      const khong = rows.filter((r) => r.attendance === 'khong').length;
+      statsEl.innerHTML =
+        tile(rows.length, 'Lượt xác nhận') +
+        tile(nhaGai, 'Khách nhà gái (người)') +
+        tile(nhaTrai, 'Khách nhà trai (người)') +
+        tile(khong, 'Không dự được');
+    }
+    function esc(s: string) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+    function renderTable(q = '') {
+      const kw = q.trim().toLowerCase();
+      const list = kw ? rows.filter((r) => (r.guest_name || '').toLowerCase().includes(kw)) : rows;
+      bodyEl.innerHTML = list.map((r) => `
+        <tr>
+          <td class="td-name" data-label="Tên">${esc(r.guest_name)}</td>
+          <td data-label="Dự tiệc"><span class="pill ${r.attendance}">${LABEL[r.attendance] || r.attendance}</span></td>
+          <td class="num" data-label="Số người">${r.guest_count}</td>
+          <td class="td-msg" data-label="Lời nhắn">${r.message ? esc(r.message) : '<span class="muted">—</span>'}</td>
+          <td class="td-time" data-label="Lúc">${fmt(r.created_at)}</td>
+        </tr>`).join('');
+      emptyRow.hidden = list.length > 0;
+      rowCount.textContent = `${list.length} dòng`;
+    }
+    searchEl.addEventListener('input', () => renderTable(searchEl.value));
+
+    refreshSession();
+  </script>
+
+  <style is:global>
+    .adm { background: #f4efe4; color: var(--ink); font-family: var(--font-be); }
+    .adm-wrap { min-height: 100svh; }
+    .tag { font-size: 11px; letter-spacing: .34em; text-transform: uppercase; color: var(--gold); }
+
+    /* LOGIN */
+    .adm-login { min-height: 100svh; display: grid; place-items: center; padding: 24px; }
+    .adm-card {
+      width: 100%; max-width: 380px; background: var(--paper); border: 1px solid var(--gold);
+      padding: 44px 34px 36px; display: flex; flex-direction: column; gap: 12px; text-align: center;
+    }
+    .adm-mono { font-family: var(--font-fraunces); font-style: italic; font-size: 44px; color: var(--wine); line-height: 1; }
+    .adm-card h1 { font-family: var(--font-fraunces); font-weight: 400; font-size: 28px; color: var(--wine-deep); margin: 8px 0 2px; }
+    .adm-sub { color: #8a7565; font-size: 14px; margin: 0 0 8px; }
+    .adm-card label { display: flex; flex-direction: column; gap: 6px; text-align: left; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #8a7565; }
+    .adm-card input {
+      font-family: var(--font-be); font-size: 15px; color: var(--ink); background: #fff;
+      border: 1px solid #e0d3bf; border-radius: 4px; padding: 11px 12px; outline: none; text-transform: none; letter-spacing: normal;
+    }
+    .adm-card input:focus { border-color: var(--wine); }
+    .adm-btn {
+      margin-top: 8px; background: var(--wine); color: var(--cream); border: 1px solid var(--wine);
+      border-radius: 999px; padding: 13px; font-size: 12px; letter-spacing: .2em; text-transform: uppercase; cursor: pointer; transition: background .3s;
+    }
+    .adm-btn:hover { background: var(--wine-deep); }
+    .adm-btn:disabled { opacity: .6; }
+    .adm-msg { color: #b3261e; font-size: 13px; min-height: 1em; margin: 2px 0 0; }
+
+    /* DASHBOARD */
+    .adm-dash { max-width: 1100px; margin: 0 auto; padding: 5vh 5vw 12vh; }
+    .adm-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 5vh; }
+    .adm-top h1 { font-family: var(--font-fraunces); font-weight: 400; font-size: clamp(1.8rem, 4vw, 2.6rem); color: var(--wine-deep); margin: 8px 0 0; }
+    .adm-top-right { display: flex; gap: 10px; align-items: center; }
+    .adm-refresh { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--gold); background: var(--paper); color: var(--wine); font-size: 18px; cursor: pointer; }
+    .adm-refresh:hover { background: #fff; }
+    .adm-logout { border: 1px solid #d8c7ad; background: none; color: var(--wine); border-radius: 999px; padding: 10px 20px; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; }
+    .adm-logout:hover { border-color: var(--wine); }
+
+    .adm-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 4vh; }
+    .adm-tile { background: var(--paper); border: 1px solid #ece0cb; border-radius: 6px; padding: 22px 20px; }
+    .adm-tile b { display: block; font-family: var(--font-fraunces); font-weight: 400; font-size: clamp(1.8rem, 4vw, 2.6rem); color: var(--wine-deep); line-height: 1; font-variant-numeric: tabular-nums; }
+    .adm-tile span { display: block; margin-top: 8px; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #8a7565; }
+    .adm-err { color: #b3261e; font-size: 14px; }
+
+    .adm-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    .adm-search { font-family: var(--font-be); font-size: 14px; padding: 10px 14px; border: 1px solid #e0d3bf; border-radius: 999px; background: #fff; outline: none; width: min(300px, 60%); }
+    .adm-search:focus { border-color: var(--wine); }
+    .adm-count { font-size: 12px; color: #8a7565; letter-spacing: .06em; }
+
+    .adm-tablewrap { background: var(--paper); border: 1px solid #ece0cb; border-radius: 8px; overflow: auto; }
+    .adm-table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 640px; }
+    .adm-table thead th { text-align: left; font-family: var(--font-be); font-weight: 600; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--cream); background: var(--wine); padding: 14px 16px; white-space: nowrap; }
+    .adm-table th.num, .adm-table td.num { text-align: center; }
+    .adm-table tbody td { padding: 14px 16px; border-top: 1px solid #efe3cf; vertical-align: top; }
+    .adm-table tbody tr:nth-child(even) { background: #fbf7ee; }
+    .td-name { font-weight: 600; white-space: nowrap; }
+    .td-msg { max-width: 320px; color: #5a463c; }
+    .td-time { white-space: nowrap; color: #8a7565; font-size: 13px; }
+    .muted { color: #c0b09b; }
+    .pill { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 12px; white-space: nowrap; border: 1px solid transparent; }
+    .pill.nha_gai { background: #f6e9d6; color: #8a5a1a; }
+    .pill.nha_trai { background: #eadff0; color: #6a3a86; }
+    .pill.ca_hai { background: #e5f0e2; color: #3f7a3a; }
+    .pill.khong { background: #f1e2e2; color: #a13a3a; }
+    .adm-empty { padding: 28px; text-align: center; color: #8a7565; font-style: italic; }
+
+    /* Tablet */
+    @media (max-width: 820px) {
+      .adm-dash { padding: 4vh 5vw 12vh; }
+      .adm-stats { grid-template-columns: repeat(2, 1fr); }
+    }
+    /* Mobile — bảng chuyển thành card, KHÔNG cuộn ngang */
+    @media (max-width: 620px) {
+      .adm-top { align-items: flex-start; }
+      .adm-top h1 { font-size: 1.6rem; }
+      .adm-toolbar { flex-direction: column; align-items: stretch; gap: 8px; }
+      .adm-search { width: 100%; }
+      .adm-count { text-align: right; }
+      .adm-tile { padding: 18px 16px; }
+
+      .adm-tablewrap { overflow: visible; background: transparent; border: none; border-radius: 0; }
+      .adm-table { min-width: 0; }
+      .adm-table thead { display: none; }
+      .adm-table tbody, .adm-table tr, .adm-table td { display: block; width: 100%; }
+      .adm-table tr {
+        background: var(--paper); border: 1px solid #ece0cb; border-radius: 8px;
+        margin-bottom: 14px; padding: 4px 2px; overflow: hidden;
+      }
+      .adm-table tbody tr:nth-child(even) { background: var(--paper); }
+      .adm-table td {
+        border: none; border-top: 1px solid #f1e7d6; padding: 11px 16px;
+        display: flex; align-items: baseline; justify-content: space-between; gap: 16px; text-align: right;
+      }
+      .adm-table tr td:first-child { border-top: none; }
+      .adm-table td::before {
+        content: attr(data-label); flex: 0 0 auto; text-align: left;
+        font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #8a7565; font-weight: 600;
+      }
+      .td-name { font-size: 15px; }
+      .td-msg { max-width: none; }
+      .adm-empty { background: var(--paper); border: 1px solid #ece0cb; border-radius: 8px; }
+    }
+    /* Login gọn trên máy nhỏ */
+    @media (max-width: 420px) {
+      .adm-card { padding: 36px 22px 30px; }
+      .adm-dash { padding: 4vh 4vw 12vh; }
+    }
+  </style>
+</Base>

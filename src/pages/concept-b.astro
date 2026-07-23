@@ -139,7 +139,7 @@ const strip = [
             <p class="c-node-date">{e.weekday ? `${e.weekday}, ` : ''}{e.date}{e.reception ? ` · ${e.reception}` : ''}</p>
             <p class="c-node-venue">{e.venue}</p>
             <p class="c-node-addr">{e.address}</p>
-            <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.mapQuery)}`} target="_blank" rel="noopener">Chỉ đường ↗</a>
+            <a href={e.mapUrl ?? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.mapQuery)}`} target="_blank" rel="noopener">Chỉ đường ↗</a>
           </div>
         </article>
       ))}

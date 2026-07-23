@@ -20,6 +20,16 @@
   --color-ink: #24140f;
 }
 
+/* Palette dùng chung (mọi trang) — concept-b (.cb) tự override sang tông tối */
+:root {
+  --wine: #6b1522;
+  --wine-deep: #4a0d16;
+  --cream: #f6f1e7;
+  --paper: #fbf8f1;
+  --gold: #b0863f;
+  --ink: #2a1a14;
+}
+
 * {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;

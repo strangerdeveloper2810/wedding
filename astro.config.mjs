@@ -7,7 +7,7 @@ import sitemap from '@astrojs/sitemap';
 // ⚠️ Đổi `site` sang domain thật khi deploy — canonical/OG/sitemap phụ thuộc vào nó.
 export default defineConfig({
   site: 'https://minhluan-thutrang.wedding',
-  integrations: [sitemap()],
+  integrations: [sitemap({ filter: (page) => !page.includes('/admin') })],
   vite: {
     plugins: [tailwindcss()],
   },

@@ -22,6 +22,8 @@ export interface WeddingEvent {
   venue: string;
   address: string;
   mapQuery: string;
+  /** Link Google Maps chính xác (ưu tiên hơn mapQuery nếu có) */
+  mapUrl?: string;
 }
 
 export const groom: Person = {
@@ -67,6 +69,7 @@ export const events: WeddingEvent[] = [
     venue: 'Tư gia nhà gái',
     address: '06, Đường số 3, Tam Bình, Thủ Đức, TP.HCM',
     mapQuery: 'Tam Bình, Thủ Đức, Hồ Chí Minh',
+    mapUrl: 'https://maps.app.goo.gl/JqQQ4sCLbB32fr4s9',
   },
   {
     key: 'honphoi',
@@ -101,6 +104,7 @@ export const events: WeddingEvent[] = [
     venue: 'Tư gia nhà trai',
     address: 'ĐT909, Bình Phước, Vĩnh Long',
     mapQuery: 'Bình Phước, Vĩnh Long',
+    mapUrl: 'https://maps.app.goo.gl/Kq1PbZYYHZY9Uyju8',
   },
 ];
 

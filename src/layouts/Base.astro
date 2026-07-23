@@ -12,6 +12,8 @@ interface Props {
   path?: string;
   /** Màu thanh trình duyệt / theme */
   themeColor?: string;
+  /** Chặn công cụ tìm kiếm (dùng cho trang /admin) */
+  noindex?: boolean;
 }
 
 const {
@@ -21,6 +23,7 @@ const {
   image = '/og-image.jpg',
   path,
   themeColor = '#4a0d16',
+  noindex = false,
 } = Astro.props;
 
 const site = Astro.site ?? new URL('http://localhost:4321');
@@ -60,7 +63,7 @@ const jsonLd = {
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta name="author" content={`${groom.fullName} & ${bride.fullName}`} />
-    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large'} />
     <meta name="theme-color" content={themeColor} />
     <meta name="format-detection" content="telephone=no" />
     <link rel="canonical" href={canonical} />

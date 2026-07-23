@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import MusicPlayer from '../components/MusicPlayer.astro';
 import Img from '../components/Img.astro';
+import Rsvp from '../components/Rsvp.astro';
 import {
   groom,
   bride,
@@ -20,7 +21,13 @@ const nav = [
   { id: 'album', label: 'Khoảnh khắc' },
   { id: 'rsvp', label: 'Tham dự' },
 ];
-const gallery = [...photos.classic, ...photos.editorial, ...photos.mono];
+// Nhóm theo "set" chụp cho gọn mắt (OCD-friendly):
+const gallery = [
+  ...photos.classic, // set cổ điển villa (vest đen · váy xoè)
+  photos.editorial[0], photos.editorial[1], photos.editorial[3], // editorial vest trắng: concept-9, 12, 14
+  photos.editorial[2], photos.editorial[4], photos.editorialWide[0], // editorial vest đen / skyline: concept-13, 4, +8 (mới)
+  ...photos.mono, photos.monoWide[1], // đen trắng: concept-15, 16, +21 (mới)
+];
 ---
 
 <Base
@@ -167,7 +174,7 @@ const gallery = [...photos.classic, ...photos.editorial, ...photos.mono];
             <p class="ev-addr">{e.address}</p>
             <a
               class="ev-map"
-              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.mapQuery)}`}
+              href={e.mapUrl ?? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.mapQuery)}`}
               target="_blank"
               rel="noopener">Xem bản đồ →</a>
           </article>
@@ -208,14 +215,17 @@ const gallery = [...photos.classic, ...photos.editorial, ...photos.mono];
           chúng mình chuẩn bị đón tiếp thật chu đáo, và gửi đôi lời chúc phúc nhé.
         </p>
         <div class="rsvp-actions">
-          <a class="rbtn" href="#">Xác nhận tham dự</a>
-          <a class="rbtn ghost" href="#">Gửi lời chúc</a>
+          <button type="button" class="rbtn" data-rsvp-open>Xác nhận tham dự</button>
+          <button type="button" class="rbtn ghost" data-wish-open>Gửi lời chúc</button>
         </div>
         <p class="rsvp-note">
           Micae Minh Luân &amp; Maria Thu Trang — chờ đón bạn ngày {weddingDateLabel}
         </p>
       </div>
     </section>
+
+    <!-- SỔ LƯU BÚT + MODAL RSVP/LỜI CHÚC -->
+    <Rsvp />
 
     <!-- LỜI NGỎ / FOOTER -->
     <footer class="foot reveal">

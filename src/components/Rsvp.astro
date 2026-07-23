@@ -1,0 +1,261 @@
+---
+// Xác nhận tham dự + Gửi lời chúc + Sổ lưu bút (Supabase)
+// Đặt sau <section class="rsvp"> trong Concept A.
+---
+
+<!-- SỔ LƯU BÚT -->
+<section class="guestbook" id="loichuc">
+  <div class="gb-head reveal">
+    <span class="tag">Sổ lưu bút</span>
+    <h2>Lời chúc phúc</h2>
+  </div>
+  <div class="gb-list" id="gbList" aria-live="polite">
+    <p class="gb-empty" id="gbEmpty">Chưa có lời chúc nào — hãy là người đầu tiên gửi tới đôi uyên ương nhé 💌</p>
+  </div>
+</section>
+
+<!-- MODAL: Xác nhận tham dự -->
+<dialog class="modal" id="rsvpDialog">
+  <form class="modal-card" id="rsvpForm">
+    <button type="button" class="modal-close" data-close aria-label="Đóng">×</button>
+    <span class="tag">Sự hiện diện của bạn</span>
+    <h3>Xác nhận tham dự</h3>
+    <label>Tên của bạn
+      <input name="guest_name" type="text" required maxlength="100" placeholder="Nhập tên của bạn…" autocomplete="name" />
+    </label>
+    <label>Bạn tham dự tiệc nào?
+      <select name="attendance" required>
+        <option value="" disabled selected>— Chọn tiệc —</option>
+        <option value="nha_gai">Nhà gái · Thủ Đức (08/08)</option>
+        <option value="nha_trai">Nhà trai · Vĩnh Long (11/08)</option>
+        <option value="ca_hai">Cả hai</option>
+        <option value="khong">Tiếc là mình không dự được</option>
+      </select>
+    </label>
+    <label>Số người tham dự (gồm bạn)
+      <input name="guest_count" type="number" min="0" max="20" value="1" />
+    </label>
+    <label>Lời nhắn (tuỳ chọn)
+      <textarea name="message" rows="2" maxlength="1000" placeholder="Đôi lời nhắn tới gia đình…"></textarea>
+    </label>
+    <button type="submit" class="modal-submit">Gửi xác nhận</button>
+    <p class="modal-msg" data-msg></p>
+  </form>
+</dialog>
+
+<!-- MODAL: Gửi lời chúc -->
+<dialog class="modal" id="wishDialog">
+  <form class="modal-card" id="wishForm">
+    <button type="button" class="modal-close" data-close aria-label="Đóng">×</button>
+    <span class="tag">Gửi lời chúc</span>
+    <h3>Đôi lời chúc phúc</h3>
+    <label>Tên của bạn
+      <input name="name" type="text" required maxlength="100" placeholder="Nhập tên của bạn…" autocomplete="name" />
+    </label>
+    <label>Lời chúc
+      <textarea name="message" rows="3" required maxlength="1000" placeholder="Gửi lời chúc tới cô dâu chú rể…"></textarea>
+    </label>
+    <button type="submit" class="modal-submit">Gửi lời chúc</button>
+    <p class="modal-msg" data-msg></p>
+  </form>
+</dialog>
+
+<script>
+  import { supabase } from '../lib/supabase';
+
+  const $ = (s: string) => document.querySelector(s);
+  const getName = () => { try { return localStorage.getItem('guestName') || ''; } catch { return ''; } };
+
+  const rsvpDialog = $('#rsvpDialog') as HTMLDialogElement | null;
+  const wishDialog = $('#wishDialog') as HTMLDialogElement | null;
+  const rsvpForm = $('#rsvpForm') as HTMLFormElement | null;
+  const wishForm = $('#wishForm') as HTMLFormElement | null;
+
+  // Điền sẵn tên (từ vỏ thiệp) mỗi lần mở modal
+  function openDialog(dialog: HTMLDialogElement | null) {
+    if (!dialog) return;
+    const n = dialog.querySelector<HTMLInputElement>('input[name="guest_name"], input[name="name"]');
+    const saved = getName();
+    if (n && saved && !n.value) n.value = saved;
+    dialog.showModal();
+    setTimeout(() => n?.focus(), 30);
+  }
+  document.querySelectorAll('[data-rsvp-open]').forEach((b) => b.addEventListener('click', () => openDialog(rsvpDialog)));
+  document.querySelectorAll('[data-wish-open]').forEach((b) => b.addEventListener('click', () => openDialog(wishDialog)));
+  document.querySelectorAll('[data-close]').forEach((b) =>
+    b.addEventListener('click', (e) => (e.currentTarget as HTMLElement).closest('dialog')?.close())
+  );
+  [rsvpDialog, wishDialog].forEach((d) =>
+    d?.addEventListener('click', (e) => { if (e.target === d) d.close(); })
+  );
+
+  function setMsg(form: HTMLElement, text: string, ok: boolean) {
+    const m = form.querySelector('[data-msg]') as HTMLElement | null;
+    if (m) { m.textContent = text; m.className = 'modal-msg ' + (ok ? 'ok' : 'err'); }
+  }
+  // Gửi xong: clear dữ liệu + tự đóng modal
+  function finish(dialog: HTMLDialogElement | null, form: HTMLFormElement) {
+    setTimeout(() => {
+      dialog?.close();
+      form.reset();
+      const m = form.querySelector('[data-msg]') as HTMLElement | null;
+      if (m) { m.textContent = ''; m.className = 'modal-msg'; }
+    }, 1500);
+  }
+
+  // Submit: Xác nhận tham dự
+  rsvpForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(rsvpForm);
+    const name = String(fd.get('guest_name') || '').trim();
+    const btn = rsvpForm.querySelector('.modal-submit') as HTMLButtonElement;
+    btn.disabled = true;
+    const { error } = await supabase.from('rsvp').insert({
+      guest_name: name,
+      attendance: fd.get('attendance'),
+      guest_count: Number(fd.get('guest_count')) || 1,
+      message: String(fd.get('message') || '').trim() || null,
+    });
+    btn.disabled = false;
+    if (error) { setMsg(rsvpForm, 'Có lỗi rồi, bạn thử lại giúp mình nhé.', false); return; }
+    try { if (name) localStorage.setItem('guestName', name); } catch {}
+    setMsg(rsvpForm, 'Cảm ơn bạn! Gia đình đã nhận được xác nhận 💛', true);
+    finish(rsvpDialog, rsvpForm);
+  });
+
+  // Submit: Gửi lời chúc
+  wishForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(wishForm);
+    const name = String(fd.get('name') || '').trim();
+    const message = String(fd.get('message') || '').trim();
+    const btn = wishForm.querySelector('.modal-submit') as HTMLButtonElement;
+    btn.disabled = true;
+    const { data, error } = await supabase.from('wishes').insert({ name, message }).select().single();
+    btn.disabled = false;
+    if (error) { setMsg(wishForm, 'Có lỗi rồi, bạn thử lại giúp mình nhé.', false); return; }
+    try { if (name) localStorage.setItem('guestName', name); } catch {}
+    setMsg(wishForm, 'Cảm ơn lời chúc của bạn 💐', true);
+    if (data) prependWish(data);
+    finish(wishDialog, wishForm);
+  });
+
+  // Sổ lưu bút
+  const gbList = $('#gbList') as HTMLElement | null;
+  const gbEmpty = $('#gbEmpty') as HTMLElement | null;
+
+  function fmtDate(iso?: string) {
+    if (!iso) return '';
+    try { return new Date(iso).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }); }
+    catch { return ''; }
+  }
+  function wishEl(w: { name: string; message: string; created_at?: string }) {
+    const fig = document.createElement('figure');
+    fig.className = 'gb-item';
+    const bq = document.createElement('blockquote');
+    bq.textContent = w.message;
+    const cap = document.createElement('figcaption');
+    const nm = document.createElement('span');
+    nm.className = 'gb-name';
+    nm.textContent = w.name;
+    cap.appendChild(nm);
+    const dt = fmtDate(w.created_at);
+    if (dt) { const d = document.createElement('span'); d.className = 'gb-date'; d.textContent = dt; cap.appendChild(d); }
+    fig.append(bq, cap);
+    return fig;
+  }
+  function prependWish(w: { name: string; message: string; created_at?: string }) {
+    if (gbEmpty) gbEmpty.style.display = 'none';
+    gbList?.prepend(wishEl(w));
+  }
+  async function loadWishes() {
+    const { data, error } = await supabase
+      .from('wishes').select('name,message,created_at')
+      .order('created_at', { ascending: false }).limit(100);
+    if (error || !data) return;
+    if (data.length && gbEmpty) gbEmpty.style.display = 'none';
+    data.forEach((w) => gbList?.appendChild(wishEl(w)));
+  }
+  loadWishes();
+</script>
+
+<!-- is:global vì card sổ lưu bút được tạo bằng JS (scoped style không áp được) -->
+<style is:global>
+  /* SỔ LƯU BÚT */
+  .guestbook { padding: 12vh 6vw; background: var(--paper); text-align: center; }
+  .gb-head { margin-bottom: 6vh; }
+  .gb-head h2 {
+    font-family: var(--font-fraunces); font-weight: 400; color: var(--wine-deep);
+    font-size: clamp(2rem, 5vw, 3.4rem); line-height: 1.05; margin: 12px 0 0;
+  }
+  .gb-list {
+    display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start;
+    gap: 22px; max-width: 1040px; margin: 0 auto;
+  }
+  .gb-empty { color: #8a7565; font-style: italic; flex-basis: 100%; }
+
+  .gb-item {
+    flex: 0 1 300px; position: relative; text-align: left; margin: 0;
+    padding: 26px 28px 22px; background: #fffdf9; border: 1px solid #ece0cb; border-radius: 3px;
+    box-shadow: 0 16px 36px -28px rgba(74, 13, 22, 0.45);
+  }
+  .gb-item::before {
+    content: '\201C'; display: block; font-family: var(--font-fraunces); font-weight: 500;
+    font-size: 44px; line-height: 0.5; height: 20px; color: var(--gold); opacity: 0.55;
+  }
+  .gb-item blockquote {
+    margin: 0 0 16px; font-family: var(--font-fraunces); font-style: italic;
+    font-size: 17px; line-height: 1.62; color: var(--ink);
+    white-space: pre-wrap; overflow-wrap: anywhere;
+  }
+  .gb-item figcaption {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+    border-top: 1px solid #f1e7d6; padding-top: 12px;
+  }
+  .gb-item .gb-name { font-family: var(--font-fraunces); font-style: italic; font-size: 15px; color: var(--wine); }
+  .gb-item .gb-date { font-size: 11px; letter-spacing: 0.06em; color: #b7a48f; white-space: nowrap; }
+
+  /* MODAL (dialog native) — căn giữa tường minh (Tailwind reset mất margin:auto) */
+  .modal {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); margin: 0;
+    border: none; padding: 0; background: transparent; width: 460px; max-width: 92vw; color: var(--ink);
+  }
+  .modal::backdrop { background: rgba(40, 20, 15, 0.55); backdrop-filter: blur(3px); }
+  .modal[open] .modal-card { animation: cardIn 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
+  @keyframes cardIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  .modal-card {
+    position: relative; background: var(--paper); border: 1px solid var(--gold);
+    padding: 42px 32px 34px; display: flex; flex-direction: column; gap: 13px;
+  }
+  .modal-close {
+    position: absolute; top: 10px; right: 14px; border: none; background: none;
+    font-size: 28px; line-height: 1; color: var(--wine); cursor: pointer;
+  }
+  .modal-card h3 {
+    font-family: var(--font-fraunces); font-weight: 400; font-size: 26px;
+    color: var(--wine-deep); margin: 2px 0 8px;
+  }
+  .modal-card label {
+    display: flex; flex-direction: column; gap: 6px;
+    font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #8a7565;
+  }
+  .modal-card input, .modal-card select, .modal-card textarea {
+    font-family: var(--font-be); font-size: 15px; color: var(--ink); background: #fff;
+    border: 1px solid #e0d3bf; border-radius: 4px; padding: 11px 12px;
+    text-transform: none; letter-spacing: normal; outline: none; width: 100%;
+  }
+  .modal-card input:focus, .modal-card select:focus, .modal-card textarea:focus { border-color: var(--wine); }
+  .modal-card textarea { resize: vertical; }
+  .modal-submit {
+    margin-top: 10px; background: var(--wine); color: var(--cream); border: 1px solid var(--wine);
+    border-radius: 999px; padding: 14px; font-size: 12px; letter-spacing: .2em; text-transform: uppercase;
+    cursor: pointer; transition: background .3s;
+  }
+  .modal-submit:hover { background: var(--wine-deep); }
+  .modal-submit:disabled { opacity: .6; cursor: default; }
+  .modal-msg { font-size: 13px; margin: 2px 0 0; min-height: 1.1em; text-align: center; }
+  .modal-msg.ok { color: var(--gold); }
+  .modal-msg.err { color: #b3261e; }
+
+  @media (max-width: 640px) { .gb-item { flex-basis: 100%; } }
+</style>
