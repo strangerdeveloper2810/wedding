@@ -1,0 +1,9 @@
+{
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "destination": "https://minhluan-thutrang.surge.sh/$1",
+      "permanent": true
+    }
+  ]
+}
